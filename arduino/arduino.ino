@@ -4,13 +4,13 @@
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 
-#define ORG "" // Organization ID
-#define DEVICE_TYPE "" // Device type
-#define DEVICE_ID "" // Device ID
-#define TOKEN "" // Authentication token
+#define ORG "p4b5ix" // Organization ID
+#define DEVICE_TYPE "arduinomegawifi" // Device type
+#define DEVICE_ID "arduinomegawifi01" // Device ID
+#define TOKEN "S&aEMl*qNarGDl&++g" // Authentication token
 
-#define WIFI_SSID "" // your network SSID (name)
-#define WIFI_PASSWORD "" // your network password
+#define WIFI_SSID "Alexandre" // your network SSID (name)
+#define WIFI_PASSWORD "14241201" // your network password
 
 Servo servoMotor;
 WiFiEspClient espClient;
@@ -20,11 +20,7 @@ char authenticationMethod[] = "use-token-auth";
 char token[] = TOKEN;
 char clientId[] = "d:" ORG ":" DEVICE_TYPE ":" DEVICE_ID;
 
-const char publishTopic[] = "iot-2/evt/status/fmt/json";
-const char responseTopic[] = "iotdm-1/response";
-const char manageTopic[] = "iotdevice-1/mgmt/manage";
-const char updateTopic[] = "iotdm-1/device/update";
-const char rebootTopic[] = "iotdm-1/mgmt/initiate/device/reboot";
+const char subscribeTopic[] = "iot-2/cmd/commandR1/fmt/json";
 
 int status = WL_IDLE_STATUS; // the Wifi radio's status
 
@@ -51,26 +47,13 @@ void setup() {
   servoMotor.write(0); // Starts the servo motor at 0 degrees
 }
 
-void loop() {  
-  String payload = "{\"d\":";
-  payload += counter++;
-  payload += "}";  
+void loop() { 
+  connectToTheIBMCloudMQTTWhenNotConected();
   
-  Serial.print("Sending payload: ");
-  Serial.println(payload);
-  
-  if (mqttClient.publish(publishTopic, (char *)payload.c_str())) {
-    Serial.println("Publish ok");
-    connectToTheIBMCloudMQTTWhenNotConected();
-  } else {
-    Serial.println("Publish failed");
-    connectToTheIBMCloudMQTTWhenNotConected();
-  }
-  
-  delay(5000);
-  servoMotor.write(90); // Rotates at 90 degrees
-  delay(5000);
-  servoMotor.write(0); // Returns to 0 degrees
+//  delay(3000);
+//  servoMotor.write(90); // Rotates at 90 degrees
+//  delay(3000);
+//  servoMotor.write(0); // Returns to 0 degrees
 }
 
 void configureWifiConnection() {
@@ -124,9 +107,76 @@ void connectToTheIBMCloudMQTTWhenNotConected() {
     Serial.print("Reconnecting client to ");
     Serial.println(server);
     while (!!!mqttClient.connect(clientId, authenticationMethod, token)) {
+      mqttClient.subscribe(subscribeTopic);
       Serial.print(".");
       delay(500);
     }
     Serial.println();
   }
 }
+
+//void loop() {
+//  while (client.available()) {
+//    handleHttpResponse();
+//  }
+//
+//  // if postingInterval seconds have passed since your last connection,
+//  // then connect again and send data
+//  if (millis() - lastConnectionTime > postingInterval) {
+//    httpRequest();
+//  }
+//}
+//
+//// this method makes a HTTP connection to the server
+//void httpRequest() {
+//  Serial.println();
+//    
+//  // close any connection before send a new request
+//  // this will free the socket on the WiFi shield
+//  client.stop();
+//
+//  // if there's a successful connection
+//  if (client.connect(server, port)) {
+//    Serial.println("Connecting...");    
+//    
+//    // send the HTTP PUT request
+//    client.println(F("GET /actions HTTP/1.1"));
+//    client.println("Host: " + String(server));
+//    client.println("Connection: close");
+//    client.println();
+//
+//    // note the time that the connection was made
+//    lastConnectionTime = millis();
+//  }
+//  else {
+//    // if you couldn't make a connection
+//    Serial.println("Connection failed");
+//  }
+//}
+//
+//void handleHttpResponse() {
+//  // ignore headers and read to first json bracket
+//  client.readStringUntil('{');
+//
+//  // get json body (everything inside of the main brackets)
+//  String jsonStrWithoutBrackets = client.readStringUntil('}');
+//
+//  // Append brackets to make the string parseable as json
+//  String jsonStr = "{" + jsonStrWithoutBrackets + "}";
+//
+//  Serial.println(jsonStr);
+//
+//  if (jsonStr.indexOf('{', 0) >= 0) {
+//    const size_t bufferSize = JSON_OBJECT_SIZE(1) + 20;
+//    DynamicJsonBuffer jsonBuffer(bufferSize);
+//
+//    JsonObject &responseJson = jsonBuffer.parseObject(jsonStr);
+//
+//    // get and print the value of the action key in our json object
+//    const char *action = responseJson["action"];
+//    const char *plug = responseJson["plug"];
+//    
+//    Serial.println("action -> " + String(action));
+//    Serial.println("plug -> " + String(plug));
+//  }
+//}
