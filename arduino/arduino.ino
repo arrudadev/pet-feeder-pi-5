@@ -8,8 +8,8 @@
 Servo servoMotor;
 WiFiEspClient espClient;
 
-char server[] = ""; // server address
-int port = 0; // server port
+char server[] = "";
+int port = 0;
 
 int status = WL_IDLE_STATUS; // the Wifi radio's status
 const int servoDigitalPin = 6; //Digital pin used by the servo motor
@@ -25,9 +25,9 @@ void setup() {
   Serial3.begin(115200);
 
   setupWifiConnection();
-    
-//  servoMotor.attach(servoDigitalPin); // Association of digital pin to object of Servo type
-//  servoMotor.write(0); // Starts the servo motor at 0 degrees
+
+  servoMotor.attach(servoDigitalPin); // Association of digital pin to object of Servo type
+  servoMotorInitialPosition();
 }
 
 void loop() { 
@@ -94,7 +94,7 @@ void httpRequest() {
     Serial.println("Connecting...");    
     
     // send the HTTP PUT request
-    espClient.println(F("GET /info HTTP/1.1"));
+    espClient.println(F("GET /feed HTTP/1.1"));
     espClient.println("Host: " + String(server));
     espClient.println("Connection: close");
     espClient.println();
@@ -126,8 +126,20 @@ void handleHttpResponse() {
 
     JsonObject &responseJson = jsonBuffer.parseObject(jsonStr);
     
-    const char *serveVersion = responseJson["version"];
-    
-    Serial.println("serveVersion -> " + String(serveVersion));    
+    const char *feedStatus = responseJson["feed"];
+
+    if (String(feedStatus) == "FEED_NOW") {
+      servoMotorFeedPosition();
+    } else {
+      servoMotorInitialPosition();
+    }
   }
+}
+
+void servoMotorInitialPosition() {
+  servoMotor.write(0);
+}
+
+void servoMotorFeedPosition() {
+  servoMotor.write(90);
 }

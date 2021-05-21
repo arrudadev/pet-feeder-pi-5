@@ -2,11 +2,19 @@ import React from 'react';
 
 import { Text, View, TouchableOpacity } from 'react-native';
 
+import { api } from '../../services/api';
+
 import styles from './styles';
 
 export const Home = () => {
-  function handleGiveFoodNow() {
-    console.log('teste');
+  async function handleGiveFoodNow() {
+    try {
+      const response = await api.put('feed');
+
+      console.log(response.data);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   return (
