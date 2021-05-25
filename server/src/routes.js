@@ -2,29 +2,40 @@ import express from 'express';
 
 import packageJson from '../package.json';
 
-const routes = express.Router();
+import IbmDbConnection from './database/connection';
 
-const feedInfo = {
-  status: 'NO_FEED',
-  times: []
-}
+const routes = express.Router();
 
 routes.get('/info', (request, response) => response.json({ version: packageJson.version }));
 
-routes.get('/feed', (request, response) => response.json({ feed: feedInfo.status }));
+routes.post('/schedules', (request, response) => {
+  try {
+    const { schedule_hour } = request.body;
 
-routes.put('/feed', (request, response) => {
-  const status = feedInfo.status;
+    const date = new Date(schedule_hour);
 
-  if (status === 'NO_FEED') {
-    feedInfo.status = 'FEED_NOW';
+    const time = `${date.getHours()}:${date.getMinutes()}`;    
 
-    setTimeout(() => {
-      feedInfo.status = 'NO_FEED';
-    }, 2000);
+    const insertScheduleSQL = `
+      INSERT INTO ${process.env.DB_SCHEMA}.SCHEDULES (SCHEDULE_HOUR)
+      VALUES('${time}');
+    `;
+  
+    IbmDbConnection(connection => {
+      connection.query(insertScheduleSQL, function (error, data) {
+        if (error) {
+          return response.status(500).json({ error: error });
+        }
+  
+        connection.close();
+  
+        return response.json({ success: true });
+      });
+    });
+  } catch (error) {
+    console.log(error);
+    response.status(500).json({error: error});
   }
-
-  response.json({ ok: true });
 });
 
 export { routes };

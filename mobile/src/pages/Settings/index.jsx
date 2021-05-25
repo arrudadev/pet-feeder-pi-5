@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Text, View, TouchableOpacity } from 'react-native';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
@@ -6,6 +6,10 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+
+import { api } from '../../services/api';
+
+import { Loader } from '../../components/Loader';
 
 import styles from './styles';
 
@@ -15,6 +19,17 @@ export const Settings = () => {
   const [currentDate, setCurrentDate] = useState(new Date());  
   const [isEdit, setIsEdit] = useState(false);
   const [editIndex, setEditIndex] = useState(-1);
+  const [loading, setLoading] = useState(false);
+
+  // useEffect(() => {
+  //   try {
+  //     const response = await api.get('hours');
+
+  //     console.log(response.data);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // }, []);
 
   function showTimePicker() {
     setTimePickerVisibility(true);
@@ -46,7 +61,9 @@ export const Settings = () => {
     setTimes(newTimes);
   }
 
-  function handleTimePickerConfirm(date) {
+  async function handleTimePickerConfirm(date) {
+    setLoading(true);
+
     if (isEdit) {
       const newTimes = times.map((time, index) => {
         if (index === editIndex) {
@@ -60,52 +77,63 @@ export const Settings = () => {
       setEditIndex(-1);
       setTimes(newTimes);
     } else {
+      
+      await api.post('schedules', {
+        schedule_hour: date
+      });
+
       setTimes([...times, date]);
     }
 
     hideTimePicker();
+
+    setLoading(false);
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Horários</Text>
-        
-        <TouchableOpacity style={styles.addNewHour} onPress={handleAddNewHour}>
-          <Text style={styles.addNewHourText}>Adicionar novo Horário</Text>
-        </TouchableOpacity>
-      </View>
+    <>
+      <Loader isLoading={loading} />
 
-      <View style={styles.containerHours}>
-        {times.length === 0 && (
-          <Text style={styles.noDataFoundText}>
-            Nenhum horário cadastrado                      
-          </Text>
-        )}
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Horários</Text>
+          
+          <TouchableOpacity style={styles.addNewHour} onPress={handleAddNewHour}>
+            <Text style={styles.addNewHourText}>Adicionar novo Horário</Text>
+          </TouchableOpacity>
+        </View>
 
-        {times.length > 0 && times.map((time, index) => (
-          <View key={Math.random() * index + 1} style={styles.hour}>
-            <Text style={styles.hourText}>
-              {format(time, 'HH:mm', {
-                locale: ptBR,
-              })}                        
+        <View style={styles.containerHours}>
+          {times.length === 0 && (
+            <Text style={styles.noDataFoundText}>
+              Nenhum horário cadastrado                      
             </Text>
+          )}
 
-            <View style={styles.hourIcons}>
-              <Ionicons name={'pencil-outline'} size={40} color="black" style={styles.icon} onPress={() => handleEditHour(time, index)} />
-              <Ionicons name={'trash-outline'} size={40} color="black" style={styles.icon} onPress={() => handleDeleteHour(index)} />
+          {times.length > 0 && times.map((time, index) => (
+            <View key={Math.random() * index + 1} style={styles.hour}>
+              <Text style={styles.hourText}>
+                {format(time, 'HH:mm', {
+                  locale: ptBR,
+                })}                        
+              </Text>
+
+              <View style={styles.hourIcons}>
+                <Ionicons name={'pencil-outline'} size={40} color="black" style={styles.icon} onPress={() => handleEditHour(time, index)} />
+                <Ionicons name={'trash-outline'} size={40} color="black" style={styles.icon} onPress={() => handleDeleteHour(index)} />
+              </View>
             </View>
-          </View>
-        ))}
+          ))}
+        </View>
+        
+        <DateTimePickerModal
+          isVisible={isTimePickerVisible}
+          mode="time"
+          date={currentDate}
+          onConfirm={handleTimePickerConfirm}
+          onCancel={hideTimePicker}
+        />
       </View>
-      
-      <DateTimePickerModal
-        isVisible={isTimePickerVisible}
-        mode="time"
-        date={currentDate}
-        onConfirm={handleTimePickerConfirm}
-        onCancel={hideTimePicker}
-      />
-    </View>
-  )   
+    </>
+  );
 }
