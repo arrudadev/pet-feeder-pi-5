@@ -9,9 +9,9 @@ import styles from './styles';
 export const Home = () => {
   async function handleGiveFoodNow() {
     try {
-      const response = await api.put('feed');
-
-      console.log(response.data);
+      await api.post('feeds', {
+        feed_status: 'N'
+      });
     } catch (error) {
       console.log(error);
     }
