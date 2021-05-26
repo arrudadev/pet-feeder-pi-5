@@ -21,6 +21,8 @@ routes.delete('/schedules', new ScheduleController().handleDeleteSchedule);
 
 routes.post('/feeds', new FeedController().handleCreateFeed);
 
+routes.put('/feeds', new FeedController().handleUpdateFeed);
+
 routes.get('/feeds/last', new FeedController().handleFindLastFeed);
 
 export { routes };

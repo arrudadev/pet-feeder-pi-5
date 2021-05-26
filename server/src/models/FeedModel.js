@@ -54,4 +54,25 @@ export class FeedModel {
 
     return feed;
   }
+
+  async update(feedId) {
+    const updateFeedStatusSQL = `
+      UPDATE ${process.env.DB_SCHEMA}.feeds SET feed_status = 'S'
+      WHERE feed_id = ${Number(feedId)};
+    `;
+  
+    await new Promise((resolve) => {
+      IbmDbConnection(connection => {
+        connection.query(updateFeedStatusSQL, function (error, data) {
+          if (error) {
+            throw error;
+          }
+    
+          connection.close();
+
+          resolve();
+        });
+      });
+    })
+  }
 }

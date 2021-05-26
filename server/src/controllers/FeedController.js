@@ -34,4 +34,27 @@ export class FeedController {
       return response.status(500).json({ error: error }); 
     }
   }
+
+  async handleUpdateFeed(request, response) {
+    try {
+      const feedModel = new FeedModel();
+
+      const feed = await feedModel.findLast();
+
+      if (feed && feed.FEED_STATUS === 'N') {
+        await feedModel.update(feed.FEED_ID);
+
+        return response.json({ success: true });
+      } 
+      
+      const statusFeed = 'S';
+
+      await feedModel.create(statusFeed);      
+
+      return response.json({ success: true });
+    } catch (error) {
+      console.log(error);
+      return response.status(500).json({ error: error }); 
+    }
+  }
 }
