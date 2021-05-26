@@ -17,7 +17,7 @@ routes.post('/schedules', (request, response) => {
     const time = `${date.getHours()}:${date.getMinutes()}`;    
 
     const insertScheduleSQL = `
-      INSERT INTO ${process.env.DB_SCHEMA}.SCHEDULES (SCHEDULE_HOUR)
+      INSERT INTO ${process.env.DB_SCHEMA}.schedules (SCHEDULE_HOUR)
       VALUES('${time}');
     `;
   
@@ -34,7 +34,50 @@ routes.post('/schedules', (request, response) => {
     });
   } catch (error) {
     console.log(error);
-    response.status(500).json({error: error});
+    response.status(500).json({ error: error });
+  }
+});
+
+routes.get('/schedules', (request, response) => {
+  try {
+    const selectSchedulesSQL = `
+      SELECT schedule_id, schedule_hour from ${process.env.DB_SCHEMA}.schedules 
+      order by schedule_hour
+      limit 3;
+    `;
+
+    function convertScheduleHourInDateFormat(scheduleHour) {
+      const [hour, minutes] = scheduleHour.split(':');
+
+      const date = new Date();
+
+      date.setHours(hour);
+      date.setMinutes(minutes);
+
+      return date;
+    }
+  
+    IbmDbConnection(connection => {
+      connection.query(selectSchedulesSQL, function (error, data) {
+        if (error) {
+          return response.status(500).json({ error: error });
+        }
+  
+        connection.close();
+  
+        return response.json({ 
+          schedules: data.map(schedule => {
+            return {
+              schedule_id: schedule.SCHEDULE_ID,
+              schedule_hour: convertScheduleHourInDateFormat(schedule.SCHEDULE_HOUR)
+            }
+          }) 
+        });
+      });
+    });
+  } catch (error) {
+    console.log(error);
+    response.status(500).json({ error: error });
   }
 });
 

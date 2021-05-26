@@ -15,21 +15,26 @@ import styles from './styles';
 
 export const Settings = () => {
   const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
-  const [times, setTimes] = useState([]);
+  const [schedules, setSchedules] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());  
   const [isEdit, setIsEdit] = useState(false);
   const [editIndex, setEditIndex] = useState(-1);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // useEffect(() => {
-  //   try {
-  //     const response = await api.get('hours');
+  useEffect(() => {    
+    try {      
+      async function fetchSchedules() {        
+        const response = await api.get('schedules');        
+  
+        setSchedules(response.data.schedules);
+        setLoading(false);
+      }
 
-  //     console.log(response.data);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // }, []);
+      fetchSchedules();
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
 
   function showTimePicker() {
     setTimePickerVisibility(true);
@@ -47,18 +52,18 @@ export const Settings = () => {
   }
 
   function handleEditHour(time, index) {
-    setCurrentDate(new Date(time));
-    setIsEdit(true);
-    setEditIndex(index);
-    showTimePicker();
+    // setCurrentDate(new Date(time));
+    // setIsEdit(true);
+    // setEditIndex(index);
+    // showTimePicker();
   }
 
   function handleDeleteHour(index) {
-    const newTimes = [...times];
+    // const newTimes = [...times];
 
-    newTimes.splice(index, 1);
+    // newTimes.splice(index, 1);
 
-    setTimes(newTimes);
+    // setTimes(newTimes);
   }
 
   async function handleTimePickerConfirm(date) {
@@ -75,14 +80,14 @@ export const Settings = () => {
 
       setIsEdit(false);
       setEditIndex(-1);
-      setTimes(newTimes);
+      // setTimes(newTimes);
     } else {
       
       await api.post('schedules', {
         schedule_hour: date
       });
 
-      setTimes([...times, date]);
+      // setTimes([...times, date]);
     }
 
     hideTimePicker();
@@ -104,23 +109,35 @@ export const Settings = () => {
         </View>
 
         <View style={styles.containerHours}>
-          {times.length === 0 && (
+          {schedules.length === 0 && (
             <Text style={styles.noDataFoundText}>
               Nenhum horário cadastrado                      
             </Text>
           )}
 
-          {times.length > 0 && times.map((time, index) => (
-            <View key={Math.random() * index + 1} style={styles.hour}>
+          {schedules.length > 0 && schedules.map(schedule => (
+            <View key={schedule.schedule_id} style={styles.hour}>
               <Text style={styles.hourText}>
-                {format(time, 'HH:mm', {
+                {format(new Date(schedule.schedule_hour), 'HH:mm', {
                   locale: ptBR,
                 })}                        
               </Text>
 
               <View style={styles.hourIcons}>
-                <Ionicons name={'pencil-outline'} size={40} color="black" style={styles.icon} onPress={() => handleEditHour(time, index)} />
-                <Ionicons name={'trash-outline'} size={40} color="black" style={styles.icon} onPress={() => handleDeleteHour(index)} />
+                <Ionicons 
+                  name={'pencil-outline'} 
+                  size={40} 
+                  color="black" 
+                  style={styles.icon} 
+                  onPress={() => handleEditHour(schedule.schedule_hour, schedule.schedule_id)} 
+                />
+                <Ionicons 
+                  name={'trash-outline'} 
+                  size={40} 
+                  color="black" 
+                  style={styles.icon} 
+                  onPress={() => handleDeleteHour(schedule.schedule_id)} 
+                />
               </View>
             </View>
           ))}
