@@ -121,4 +121,29 @@ routes.put('/schedules', (request, response) => {
   }
 });
 
+routes.delete('/schedules', (request, response) => {
+  try {
+    const { schedule_id } = request.body;    
+
+    const deleteScheduleSQL = `
+      DELETE FROM ${process.env.DB_SCHEMA}.schedules WHERE schedule_id = ${Number(schedule_id)};
+    `;
+  
+    IbmDbConnection(connection => {
+      connection.query(deleteScheduleSQL, function (error, data) {
+        if (error) {
+          return response.status(500).json({ error: error });
+        }
+  
+        connection.close();
+  
+        return response.json({ success: true });
+      });
+    });
+  } catch (error) {
+    console.log(error);
+    response.status(500).json({ error: error });
+  }
+});
+
 export { routes };

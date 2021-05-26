@@ -60,12 +60,29 @@ export const Settings = () => {
     showTimePicker();
   }
 
-  function handleDeleteHour(index) {
-    // const newTimes = [...times];
+  async function handleDeleteSchedule(schedule) {
+    try {
+      setLoading(true);
 
-    // newTimes.splice(index, 1);
+      await api.delete('schedules', {
+        data: {
+          schedule_id: schedule.schedule_id
+        }
+      });
 
-    // setTimes(newTimes);
+      const newSchedules = [];
+  
+      schedules.forEach(currentSchedule => {
+        if (currentSchedule.schedule_id !== schedule.schedule_id) {
+          newSchedules.push(currentSchedule);
+        }
+      });
+      
+      setSchedules(newSchedules);
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   async function handleTimePickerConfirm(date) {
@@ -147,7 +164,7 @@ export const Settings = () => {
                   size={40} 
                   color="black" 
                   style={styles.icon} 
-                  onPress={() => handleDeleteHour(schedule.schedule_id)} 
+                  onPress={() => handleDeleteSchedule(schedule)} 
                 />
               </View>
             </View>
