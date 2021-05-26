@@ -20,6 +20,7 @@ export const Settings = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [editScheduleID, setEditScheduleID] = useState(-1);
   const [loading, setLoading] = useState(true);
+  const [fetchingData, setFeatchingData] = useState(true);
 
   useEffect(() => {    
     try {      
@@ -28,6 +29,7 @@ export const Settings = () => {
   
         setSchedules(response.data.schedules);
         setLoading(false);
+        setFeatchingData(false);
       }
 
       fetchSchedules();
@@ -45,7 +47,7 @@ export const Settings = () => {
   };  
 
   function handleAddNewHour() {
-    if (times.length < 3) {
+    if (schedules.length < 3) {
       setCurrentDate(new Date());
       showTimePicker();
     }
@@ -89,11 +91,11 @@ export const Settings = () => {
         setSchedules(newSchedules);
       } else {
         
-        await api.post('schedules', {
+        const response = await api.post('schedules', {
           schedule_hour: date
         });
   
-        // setTimes([...times, date]);
+        setSchedules([...schedules, { schedule_hour: date, schedule_id: response.data.schedule_id }]);
       }
   
       hideTimePicker();
@@ -120,7 +122,7 @@ export const Settings = () => {
         <View style={styles.containerHours}>
           {schedules.length === 0 && (
             <Text style={styles.noDataFoundText}>
-              Nenhum horário cadastrado                      
+              { fetchingData ?  'Buscando horários...' : 'Nenhum horário cadastrado' }
             </Text>
           )}
 

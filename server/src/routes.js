@@ -14,22 +14,32 @@ routes.post('/schedules', (request, response) => {
 
     const date = new Date(schedule_hour);
 
-    const time = `${date.getHours()}:${date.getMinutes()}`;    
+    const scheduleHour = `${date.getHours()}:${date.getMinutes()}`;    
 
     const insertScheduleSQL = `
       INSERT INTO ${process.env.DB_SCHEMA}.schedules (SCHEDULE_HOUR)
-      VALUES('${time}');
+      VALUES('${scheduleHour}');
+    `;
+
+    const selectInsertedIdSQL = `
+      SELECT MAX(schedule_id) schedule_id from ${process.env.DB_SCHEMA}.schedules;
     `;
   
     IbmDbConnection(connection => {
       connection.query(insertScheduleSQL, function (error, data) {
         if (error) {
           return response.status(500).json({ error: error });
+        }        
+      });
+
+      connection.query(selectInsertedIdSQL, function (error, data) {
+        if (error) {
+          return response.status(500).json({ error: error });
         }
-  
-        connection.close();
-  
-        return response.json({ success: true });
+
+        connection.close();        
+
+        return response.json({ schedule_id: data[0].SCHEDULE_ID });
       });
     });
   } catch (error) {
