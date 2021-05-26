@@ -81,4 +81,34 @@ routes.get('/schedules', (request, response) => {
   }
 });
 
+routes.put('/schedules', (request, response) => {
+  try {
+    const { schedule_hour, schedule_id } = request.body;
+
+    const date = new Date(schedule_hour);
+
+    const scheduleHour = `${date.getHours()}:${date.getMinutes()}`;  
+
+    const updateScheduleHourSQL = `
+      UPDATE ${process.env.DB_SCHEMA}.schedules SET schedule_hour = '${scheduleHour}'
+      WHERE schedule_id = ${Number(schedule_id)};
+    `;
+  
+    IbmDbConnection(connection => {
+      connection.query(updateScheduleHourSQL, function (error, data) {
+        if (error) {
+          return response.status(500).json({ error: error });
+        }
+  
+        connection.close();
+  
+        return response.json({ success: true });
+      });
+    });
+  } catch (error) {
+    console.log(error);
+    response.status(500).json({ error: error });
+  }
+});
+
 export { routes };

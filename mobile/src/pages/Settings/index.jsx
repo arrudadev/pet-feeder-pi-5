@@ -18,7 +18,7 @@ export const Settings = () => {
   const [schedules, setSchedules] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());  
   const [isEdit, setIsEdit] = useState(false);
-  const [editIndex, setEditIndex] = useState(-1);
+  const [editScheduleID, setEditScheduleID] = useState(-1);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {    
@@ -51,11 +51,11 @@ export const Settings = () => {
     }
   }
 
-  function handleEditHour(time, index) {
-    // setCurrentDate(new Date(time));
-    // setIsEdit(true);
-    // setEditIndex(index);
-    // showTimePicker();
+  function handleEditSchedule(schedule) {
+    setCurrentDate(new Date(schedule.schedule_hour));
+    setIsEdit(true);
+    setEditScheduleID(schedule.schedule_id);
+    showTimePicker();
   }
 
   function handleDeleteHour(index) {
@@ -67,32 +67,41 @@ export const Settings = () => {
   }
 
   async function handleTimePickerConfirm(date) {
-    setLoading(true);
-
-    if (isEdit) {
-      const newTimes = times.map((time, index) => {
-        if (index === editIndex) {
-          time = date;
-        }
-
-        return time;
-      });
-
-      setIsEdit(false);
-      setEditIndex(-1);
-      // setTimes(newTimes);
-    } else {
-      
-      await api.post('schedules', {
-        schedule_hour: date
-      });
-
-      // setTimes([...times, date]);
+    try {
+      setLoading(true);
+  
+      if (isEdit) {
+        await api.put('schedules', {
+          schedule_hour: date,
+          schedule_id: editScheduleID
+        });
+  
+        const newSchedules = schedules.map(schedule => {
+          if (schedule.schedule_id === editScheduleID) {
+            schedule.schedule_hour = date;
+          }
+  
+          return schedule;
+        });
+  
+        setIsEdit(false);
+        setEditScheduleID(-1);
+        setSchedules(newSchedules);
+      } else {
+        
+        await api.post('schedules', {
+          schedule_hour: date
+        });
+  
+        // setTimes([...times, date]);
+      }
+  
+      hideTimePicker();
+  
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
     }
-
-    hideTimePicker();
-
-    setLoading(false);
   };
 
   return (
@@ -129,7 +138,7 @@ export const Settings = () => {
                   size={40} 
                   color="black" 
                   style={styles.icon} 
-                  onPress={() => handleEditHour(schedule.schedule_hour, schedule.schedule_id)} 
+                  onPress={() => handleEditSchedule(schedule)} 
                 />
                 <Ionicons 
                   name={'trash-outline'} 
