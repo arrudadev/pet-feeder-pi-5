@@ -1,11 +1,13 @@
 import IbmDbConnection from '../database/connection';
 
+import { formatDateInHour } from '../utils/formatDateInHour';
+
 export class FeedModel {
   async create(status) {
     const date = new Date();
 
     const feedDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-    const feedHour = `${date.getHours()}:${date.getMinutes()}`;
+    const feedHour = formatDateInHour(date);
 
     const insertFeedSQL = `
       INSERT INTO ${process.env.DB_SCHEMA}.feeds (FEED_DATE, FEED_HOUR, FEED_STATUS)

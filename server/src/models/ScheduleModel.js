@@ -1,6 +1,7 @@
 import IbmDbConnection from '../database/connection';
 
 import { convertScheduleHourInDateFormat } from '../utils/convertScheduleHourInDateFormat';
+import { formatDateInHour } from '../utils/formatDateInHour';
 
 export class ScheduleModel {
   async create(scheduleHour) {
@@ -8,7 +9,7 @@ export class ScheduleModel {
 
     const date = new Date(scheduleHour);
 
-    const scheduleHourFormated = `${date.getHours()}:${date.getMinutes()}`;    
+    const scheduleHourFormated = formatDateInHour(date);    
 
     const insertScheduleSQL = `
       INSERT INTO ${process.env.DB_SCHEMA}.schedules (SCHEDULE_HOUR)
@@ -80,7 +81,7 @@ export class ScheduleModel {
   async update(scheduleHour, scheduleId) {
     const date = new Date(scheduleHour);
 
-    const scheduleHourFormated = `${date.getHours()}:${date.getMinutes()}`;  
+    const scheduleHourFormated = formatDateInHour(date);  
 
     const updateScheduleHourSQL = `
       UPDATE ${process.env.DB_SCHEMA}.schedules SET schedule_hour = '${scheduleHourFormated}'
