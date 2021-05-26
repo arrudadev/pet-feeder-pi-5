@@ -55,6 +55,35 @@ export class FeedModel {
     return feed;
   }
 
+  async findLastByStatus(status) {
+    let feed = {};
+
+    const selectLastFeedByStatusSQL = `
+      SELECT feed_id, feed_date, feed_hour, feed_status from ${process.env.DB_SCHEMA}.feeds
+      where feed_status = '${status}'
+      order by feed_id desc
+      limit 1;
+    `;
+  
+    await new Promise((resolve) => {
+      IbmDbConnection(connection => {
+        connection.query(selectLastFeedByStatusSQL, function (error, data) {
+          if (error) {
+            throw error;
+          }
+          
+          connection.close();
+
+          feed = data[0];
+
+          resolve();
+        });
+      });
+    });
+
+    return feed;
+  }
+
   async update(feedId) {
     const updateFeedStatusSQL = `
       UPDATE ${process.env.DB_SCHEMA}.feeds SET feed_status = 'S'

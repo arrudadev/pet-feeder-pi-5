@@ -16,7 +16,9 @@ export class FeedController {
 
   async handleFindLastFeed(request, response) {
     try {
-      const feed = await new FeedModel().findLast();
+      const feedModel = new FeedModel();
+
+      const feed = await feedModel.findLast();      
 
       if (feed && feed.FEED_STATUS === 'S') {
         return response.json({ 
@@ -26,6 +28,20 @@ export class FeedController {
             feed_hour: feed.FEED_HOUR,
           }
         });
+      }
+
+      if (feed && feed.FEED_STATUS === 'N') {
+        const feedStatusOk = await feedModel.findLastByStatus('S');
+
+        if (feedStatusOk) {
+          return response.json({ 
+            feed: {
+              feed_id: feedStatusOk.FEED_ID,
+              feed_date: feedStatusOk.FEED_DATE,
+              feed_hour: feedStatusOk.FEED_HOUR,
+            }
+          });
+        }
       }
   
       return response.json({ feed: {} });
