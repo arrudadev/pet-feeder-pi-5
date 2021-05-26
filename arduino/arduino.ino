@@ -24,13 +24,18 @@ void setup() {
   // initialize serial for ESP module
   Serial3.begin(115200);
 
-  setupWifiConnection();
+//  setupWifiConnection();
 
   servoMotor.attach(servoDigitalPin); // Association of digital pin to object of Servo type
   servoMotorInitialPosition();
 }
 
-void loop() { 
+void loop() {
+  delay(2000);
+  servoMotorFeedPosition();
+  delay(2000);
+  servoMotorInitialPosition();
+  /*
   while (espClient.available()) {
     handleHttpResponse();
   }
@@ -40,6 +45,7 @@ void loop() {
   if (millis() - lastConnectionTime > postingInterval) {
     httpRequest();
   }
+  */
 }
 
 void setupWifiConnection() {

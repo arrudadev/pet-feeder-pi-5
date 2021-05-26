@@ -26,4 +26,32 @@ export class FeedModel {
       });
     });
   }
+
+  async findLast() {
+    let feed = {};
+
+    const selectLastFeedSQL = `
+      SELECT feed_id, feed_date, feed_hour, feed_status from ${process.env.DB_SCHEMA}.feeds 
+      order by feed_id desc
+      limit 1;
+    `;
+  
+    await new Promise((resolve) => {
+      IbmDbConnection(connection => {
+        connection.query(selectLastFeedSQL, function (error, data) {
+          if (error) {
+            throw error;
+          }
+          
+          connection.close();
+
+          feed = data[0];
+
+          resolve();
+        });
+      });
+    });
+
+    return feed;
+  }
 }
