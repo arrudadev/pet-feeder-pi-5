@@ -7,6 +7,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import { Home } from './pages/Home';
 import { Settings } from './pages/Settings';
+import { Feeds } from './pages/Feeds';
 
 const Tab = createBottomTabNavigator();
 
@@ -22,6 +23,8 @@ export const Routes = () => {
               iconName = 'home-outline';
             } else if (route.name === 'Settings') {
               iconName = 'alarm-outline';
+            } else if (route.name === 'Feeds') {
+              iconName = 'stats-chart-outline';
             }
             
             return <Ionicons name={iconName} size={size} color={color} />;
@@ -33,6 +36,7 @@ export const Routes = () => {
         }}>
         <Tab.Screen name="Home" component={Home} />
         <Tab.Screen name="Settings" component={Settings} />
+        <Tab.Screen name="Feeds" component={Feeds} />
       </Tab.Navigator>
     </NavigationContainer>
   );
