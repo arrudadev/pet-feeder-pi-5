@@ -57,19 +57,21 @@ export class FeedController {
 
   async handleUpdateFeed(request, response) {
     try {
+      const { feed_weight } = request.body;
+
       const feedModel = new FeedModel();
 
       const feed = await feedModel.findLast();
 
       if (feed && feed.FEED_STATUS === 'N') {
-        await feedModel.update(feed.FEED_ID);
+        await feedModel.update(feed.FEED_ID, feed_weight);
 
         return response.json({ success: true });
       } 
       
       const statusFeed = 'S';
 
-      await feedModel.create(statusFeed);      
+      await feedModel.create(statusFeed, feed_weight);
 
       return response.json({ success: true });
     } catch (error) {

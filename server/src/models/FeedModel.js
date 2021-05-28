@@ -3,15 +3,17 @@ import IbmDbConnection from '../database/connection';
 import { formatDateInHour } from '../utils/formatDateInHour';
 
 export class FeedModel {
-  async create(status) {
+  async create(status, weight) {
     const date = new Date();
 
     const feedDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
     const feedHour = formatDateInHour(date);
 
+    weight = weight || null;
+
     const insertFeedSQL = `
-      INSERT INTO ${process.env.DB_SCHEMA}.feeds (FEED_DATE, FEED_HOUR, FEED_STATUS)
-      VALUES('${feedDate}', '${feedHour}', '${status}');
+      INSERT INTO ${process.env.DB_SCHEMA}.feeds (FEED_DATE, FEED_HOUR, FEED_STATUS, FEED_WEIGHT)
+      VALUES('${feedDate}', '${feedHour}', '${status}', ${weight});
     `;
   
     await new Promise((resolve) => {
@@ -86,9 +88,11 @@ export class FeedModel {
     return feed;
   }
 
-  async update(feedId) {
+  async update(feedId, weight) {
+    weight = weight || null;
+
     const updateFeedStatusSQL = `
-      UPDATE ${process.env.DB_SCHEMA}.feeds SET feed_status = 'S'
+      UPDATE ${process.env.DB_SCHEMA}.feeds SET feed_status = 'S', feed_weight = ${weight}
       WHERE feed_id = ${Number(feedId)};
     `;
   
