@@ -75,7 +75,7 @@ export class FeedModel {
     let feed = {};
 
     const selectLastFeedSQL = `
-      SELECT feed_id, feed_date, feed_hour, feed_status from ${process.env.DB_SCHEMA}.feeds 
+      SELECT feed_id, feed_date, feed_hour, feed_status, feed_weight from ${process.env.DB_SCHEMA}.feeds 
       order by feed_id desc
       limit 1;
     `;
@@ -103,7 +103,7 @@ export class FeedModel {
     let feed = {};
 
     const selectLastFeedByStatusSQL = `
-      SELECT feed_id, feed_date, feed_hour, feed_status from ${process.env.DB_SCHEMA}.feeds
+      SELECT feed_id, feed_date, feed_hour, feed_status, feed_weight from ${process.env.DB_SCHEMA}.feeds
       where feed_status = '${status}'
       order by feed_id desc
       limit 1;

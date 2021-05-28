@@ -36,11 +36,16 @@ export class FeedController {
       const feed = await feedModel.findLast();      
 
       if (feed && feed.FEED_STATUS === 'S') {
+        const feedDate = new Date(feed.FEED_DATE);
+
+        feedDate.setDate(feedDate.getDate() + 1);
+
         return response.json({ 
           feed: {
             feed_id: feed.FEED_ID,
-            feed_date: feed.FEED_DATE,
-            feed_hour: feed.FEED_HOUR,
+            feed_date: feedDate,
+            feed_hour: convertScheduleHourInDateFormat(feed.FEED_HOUR),
+            feed_weight: feed.FEED_WEIGHT
           }
         });
       }
@@ -48,12 +53,17 @@ export class FeedController {
       if (feed && feed.FEED_STATUS === 'N') {
         const feedStatusOk = await feedModel.findLastByStatus('S');
 
+        const feedDate = new Date(feedStatusOk.FEED_DATE);
+
+        feedDate.setDate(feedDate.getDate() + 1);
+
         if (feedStatusOk) {
           return response.json({ 
             feed: {
               feed_id: feedStatusOk.FEED_ID,
-              feed_date: feedStatusOk.FEED_DATE,
-              feed_hour: feedStatusOk.FEED_HOUR,
+              feed_date: feedDate,
+              feed_hour: convertScheduleHourInDateFormat(feedStatusOk.FEED_HOUR),
+              feed_weight: feedStatusOk.FEED_WEIGHT
             }
           });
         }
