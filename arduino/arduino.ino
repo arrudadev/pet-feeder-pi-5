@@ -7,15 +7,22 @@
 
 Servo servoMotor;
 WiFiEspClient espClient;
+HX711 scale;
 
-char server[] = "";
-int port = 0;
+char server[] = "192.168.1.15";
+int port = 3333;
 
 int status = WL_IDLE_STATUS; // the Wifi radio's status
 const int servoDigitalPin = 6; //Digital pin used by the servo motor
 
 unsigned long lastConnectionTime = 0; // last time you connected to the server, in milliseconds
-const unsigned long postingInterval = 1000; // delay between updates, in milliseconds
+const unsigned long postingInterval = 5000; // delay between updates, in milliseconds
+
+// pin configuration for HX711 module
+const int PINO_DT = 3;
+const int PINO_SCK = 2;
+
+float measure = 0;
 
 void setup() {
   // initialize serial for debugging
@@ -24,28 +31,24 @@ void setup() {
   // initialize serial for ESP module
   Serial3.begin(115200);
 
-//  setupWifiConnection();
+  setupWifiConnection();  
 
   servoMotor.attach(servoDigitalPin); // Association of digital pin to object of Servo type
   servoMotorInitialPosition();
+
+  setupHX711();
 }
 
 void loop() {
-  delay(2000);
-  servoMotorFeedPosition();
-  delay(2000);
-  servoMotorInitialPosition();
-  /*
   while (espClient.available()) {
-    handleHttpResponse();
+    handleResponseVerifyNeedFeed();
   }
 
   // if postingInterval seconds have passed since your last connection,
   // then connect again and send data
   if (millis() - lastConnectionTime > postingInterval) {
-    httpRequest();
+    verifyNeedFeed();
   }
-  */
 }
 
 void setupWifiConnection() {
@@ -90,7 +93,7 @@ void printWifiStatus() {
   Serial.println(" dBm");
 }
 
-void httpRequest() {
+void verifyNeedFeed() {
   // close any connection before send a new request
   // this will free the socket on the WiFi shield
   espClient.stop();
@@ -100,7 +103,7 @@ void httpRequest() {
     Serial.println("Connecting...");    
     
     // send the HTTP PUT request
-    espClient.println(F("GET /feed HTTP/1.1"));
+    espClient.println(F("GET /feeds/verify HTTP/1.1"));
     espClient.println("Host: " + String(server));
     espClient.println("Connection: close");
     espClient.println();
@@ -114,7 +117,7 @@ void httpRequest() {
   }
 }
 
-void handleHttpResponse() {
+void handleResponseVerifyNeedFeed() {
   // ignore headers and read to first json bracket
   espClient.readStringUntil('{');
 
@@ -136,9 +139,44 @@ void handleHttpResponse() {
 
     if (String(feedStatus) == "FEED_NOW") {
       servoMotorFeedPosition();
+      
+      delay(2000);
+        
+      updateFeed();
     } else {
       servoMotorInitialPosition();
     }
+  }
+}
+
+void updateFeed() {
+  // close any connection before send a new request
+  // this will free the socket on the WiFi shield
+  espClient.stop();
+
+  // if there's a successful connection
+  if (espClient.connect(server, port)) {
+    Serial.println("Connecting...");
+
+    measure = scale.get_units(5);
+
+    String payload = "{\"feed_weight\":\""+String(measure)+"\"}";
+    
+    // send the HTTP PUT request
+    espClient.println(F("PUT /feeds HTTP/1.1"));
+    espClient.println("Host: " + String(server));
+    espClient.println("Connection: close");
+    espClient.println("Content-Type: application/x-www-form-urlencoded");
+    espClient.println("Content-Length: 16");
+    espClient.println(payload);
+    espClient.println();
+
+    // note the time that the connection was made
+    lastConnectionTime = millis();
+  }
+  else {
+    // if you couldn't make a connection
+    Serial.println("Connection failed");
   }
 }
 
@@ -148,4 +186,14 @@ void servoMotorInitialPosition() {
 
 void servoMotorFeedPosition() {
   servoMotor.write(90);
+}
+
+void setupHX711() {
+  scale.begin(PINO_DT, PINO_SCK); // initialization and definition of the DT and SCK pins inside the scale object
+  scale.set_scale(-612740); // Cleaning the scale value
+
+  delay(2000);
+  
+  scale.tare(); // Zeroing the balance to disregard the structure's mass
+  Serial.println("Balança Zerada");
 }
