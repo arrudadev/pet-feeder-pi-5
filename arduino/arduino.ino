@@ -1,6 +1,7 @@
 #include "WiFiEsp.h"
 #include <ArduinoJson.h>
 #include <Servo.h>
+#include <HX711.h>
 
 #define WIFI_SSID "" // your network SSID (name)
 #define WIFI_PASSWORD "" // your network password
@@ -9,14 +10,14 @@ Servo servoMotor;
 WiFiEspClient espClient;
 HX711 scale;
 
-char server[] = "192.168.1.15";
+char server[] = "";
 int port = 3333;
 
 int status = WL_IDLE_STATUS; // the Wifi radio's status
 const int servoDigitalPin = 6; //Digital pin used by the servo motor
 
 unsigned long lastConnectionTime = 0; // last time you connected to the server, in milliseconds
-const unsigned long postingInterval = 5000; // delay between updates, in milliseconds
+const unsigned long postingInterval = 10000; // delay between updates, in milliseconds
 
 // pin configuration for HX711 module
 const int PINO_DT = 3;
@@ -127,8 +128,6 @@ void handleResponseVerifyNeedFeed() {
   // Append brackets to make the string parseable as json
   String jsonStr = "{" + jsonStrWithoutBrackets + "}";
 
-  Serial.println(jsonStr);
-
   if (jsonStr.indexOf('{', 0) >= 0) {
     const size_t bufferSize = JSON_OBJECT_SIZE(1) + 20;
     DynamicJsonBuffer jsonBuffer(bufferSize);
@@ -137,7 +136,10 @@ void handleResponseVerifyNeedFeed() {
     
     const char *feedStatus = responseJson["feed"];
 
+    Serial.println(jsonStr);
+
     if (String(feedStatus) == "FEED_NOW") {
+      Serial.println("FEED");
       servoMotorFeedPosition();
       
       delay(2000);
@@ -166,8 +168,8 @@ void updateFeed() {
     espClient.println(F("PUT /feeds HTTP/1.1"));
     espClient.println("Host: " + String(server));
     espClient.println("Connection: close");
-    espClient.println("Content-Type: application/x-www-form-urlencoded");
-    espClient.println("Content-Length: 16");
+    espClient.println("Content-Type: application/json");
+    espClient.println("Content-Length: " + String(payload.length()));
     espClient.println(payload);
     espClient.println();
 
