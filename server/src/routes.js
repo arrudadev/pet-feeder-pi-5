@@ -23,6 +23,8 @@ routes.post('/feeds', new FeedController().handleCreateFeed);
 
 routes.put('/feeds', new FeedController().handleUpdateFeed);
 
+routes.get('/feeds', new FeedController().handleFindAllFeeds);
+
 routes.get('/feeds/verify', new FeedController().handleVerifyNeedFeed);
 
 routes.get('/feeds/last', new FeedController().handleFindLastFeed);

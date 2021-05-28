@@ -1,5 +1,6 @@
 import IbmDbConnection from '../database/connection';
 
+import { convertScheduleHourInDateFormat } from '../utils/convertScheduleHourInDateFormat';
 import { formatDateInHour } from '../utils/formatDateInHour';
 
 export class FeedModel {
@@ -29,6 +30,45 @@ export class FeedModel {
         resolve();
       });
     });
+  }
+
+  async find() {
+    let feeds = [];
+
+    const selectFeedsSQL = `
+      SELECT feed_id, feed_date, feed_hour, feed_status, feed_weight from ${process.env.DB_SCHEMA}.feeds
+      where feed_status = 'S'
+      order by feed_id desc;
+    `;
+  
+    await new Promise((resolve) => {
+      IbmDbConnection(connection => {
+        connection.query(selectFeedsSQL, function (error, data) {
+          if (error) {
+            throw error;
+          }
+          
+          connection.close();
+
+          feeds = data.map(feed => {
+            const feedDate = new Date(feed.FEED_DATE);
+
+            feedDate.setDate(feedDate.getDate() + 1);
+
+            return {
+              feed_id: feed.FEED_ID,
+              feed_date: feedDate,
+              feed_hour: convertScheduleHourInDateFormat(feed.FEED_HOUR),
+              feed_weight: feed.FEED_WEIGHT,
+            }
+          });
+
+          resolve();
+        });
+      });
+    });
+
+    return feeds;
   }
 
   async findLast() {

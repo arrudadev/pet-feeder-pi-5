@@ -18,6 +18,17 @@ export class FeedController {
     }
   }
 
+  async handleFindAllFeeds(request, response) {
+    try {      
+      const feeds = await new FeedModel().find();      
+
+      return response.json({ feeds });
+    } catch (error) {
+      console.log(error);
+      return response.status(500).json({ error: error }); 
+    }
+  }
+
   async handleFindLastFeed(request, response) {
     try {
       const feedModel = new FeedModel();
