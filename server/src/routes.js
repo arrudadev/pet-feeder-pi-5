@@ -11,6 +11,16 @@ const routes = express.Router();
 
 routes.get('/info', (request, response) => response.json({ version: packageJson.version }));
 
+routes.get('/members', (request, response) => response.json({ 
+  grupo: 'GRUPO 03', 
+  members: [
+    { name: 'Alexandre Monteiro' },
+    { name: 'David Nascimento' },
+    { name: 'Felipe Timoti' },
+    { name: 'Gian Carlos' },
+  ] 
+}));
+
 routes.post('/schedules', new ScheduleController().handleCreateSchedule);
 
 routes.get('/schedules', new ScheduleController().handleFindSchedules);
