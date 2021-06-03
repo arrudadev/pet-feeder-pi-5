@@ -1,0 +1,4 @@
+applications:
+- name: PI5
+  random-route: true
+  memory: 128M
