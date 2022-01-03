@@ -11,15 +11,15 @@
 
 ## Iot
 
-See [iot\README.md](iot\README.md) for more details.
+See [iot/README.md](iot/README.md) for more details.
 
 ## Mobile
 
-See [mobile\README.md](mobile\README.md) for more details.
+See [mobile/README.md](mobile/README.md) for more details.
 
 ## Server
 
-See [server\README.md](server\README.md) for more details.
+See [server/README.md](server/README.md) for more details.
 
 # :bug: Issues
 
